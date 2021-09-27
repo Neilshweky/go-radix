@@ -25,9 +25,9 @@ Below is a simple example of usage
 ```go
 // Create a tree
 r := radix.New()
-r.Insert("foo", 1)
-r.Insert("bar", 2)
-r.Insert("foobar", 2)
+r.Insert("foo")
+r.Insert("bar")
+r.Insert("foobar")
 
 // Find the longest prefix match
 m, _, _ := r.LongestPrefix("foozip")
