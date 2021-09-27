@@ -10,10 +10,10 @@ import (
 
 func TestRadix(t *testing.T) {
 	var min, max string
-	inp := make(map[string]interface{})
+	inp := make([]string, 0)
 	for i := 0; i < 1000; i++ {
 		gen := generateUUID()
-		inp[gen] = i
+		inp = append(inp, gen)
 		if gen < min || i == 0 {
 			min = gen
 		}
@@ -22,43 +22,37 @@ func TestRadix(t *testing.T) {
 		}
 	}
 
-	r := NewFromMap(inp)
+	r := NewFromList(inp)
 	if r.Len() != len(inp) {
 		t.Fatalf("bad length: %v %v", r.Len(), len(inp))
 	}
 
-	r.Walk(func(k string, v interface{}) bool {
+	r.Walk(func(k string) bool {
 		println(k)
 		return false
 	})
 
-	for k, v := range inp {
-		out, ok := r.Get(k)
+	for _, k := range inp {
+		ok := r.Get(k)
 		if !ok {
 			t.Fatalf("missing key: %v", k)
-		}
-		if out != v {
-			t.Fatalf("value mis-match: %v %v", out, v)
 		}
 	}
 
 	// Check min and max
-	outMin, _, _ := r.Minimum()
+	outMin, _ := r.Minimum()
 	if outMin != min {
 		t.Fatalf("bad minimum: %v %v", outMin, min)
 	}
-	outMax, _, _ := r.Maximum()
+	outMax, _ := r.Maximum()
 	if outMax != max {
 		t.Fatalf("bad maximum: %v %v", outMax, max)
 	}
 
-	for k, v := range inp {
-		out, ok := r.Delete(k)
+	for _, k := range inp {
+		ok := r.Delete(k)
 		if !ok {
 			t.Fatalf("missing key: %v", k)
-		}
-		if out != v {
-			t.Fatalf("value mis-match: %v %v", out, v)
 		}
 	}
 	if r.Len() != 0 {
@@ -68,21 +62,21 @@ func TestRadix(t *testing.T) {
 
 func TestRoot(t *testing.T) {
 	r := New()
-	_, ok := r.Delete("")
+	ok := r.Delete("")
 	if ok {
 		t.Fatalf("bad")
 	}
-	_, ok = r.Insert("", true)
+	ok = r.Insert("")
 	if ok {
 		t.Fatalf("bad")
 	}
-	val, ok := r.Get("")
-	if !ok || val != true {
-		t.Fatalf("bad: %v", val)
+	ok = r.Get("")
+	if !ok {
+		t.Fatalf("bad")
 	}
-	val, ok = r.Delete("")
-	if !ok || val != true {
-		t.Fatalf("bad: %v", val)
+	ok = r.Delete("")
+	if !ok {
+		t.Fatalf("bad")
 	}
 }
 
@@ -93,11 +87,11 @@ func TestDelete(t *testing.T) {
 	s := []string{"", "A", "AB"}
 
 	for _, ss := range s {
-		r.Insert(ss, true)
+		r.Insert(ss)
 	}
 
 	for _, ss := range s {
-		_, ok := r.Delete(ss)
+		ok := r.Delete(ss)
 		if !ok {
 			t.Fatalf("bad %q", ss)
 		}
@@ -123,7 +117,7 @@ func TestDeletePrefix(t *testing.T) {
 	for _, test := range cases {
 		r := New()
 		for _, ss := range test.inp {
-			r.Insert(ss, true)
+			r.Insert(ss)
 		}
 
 		deleted := r.DeletePrefix(test.prefix)
@@ -132,7 +126,7 @@ func TestDeletePrefix(t *testing.T) {
 		}
 
 		out := []string{}
-		fn := func(s string, v interface{}) bool {
+		fn := func(s string) bool {
 			out = append(out, s)
 			return false
 		}
@@ -156,7 +150,7 @@ func TestLongestPrefix(t *testing.T) {
 		"foozip",
 	}
 	for _, k := range keys {
-		r.Insert(k, nil)
+		r.Insert(k)
 	}
 	if r.Len() != len(keys) {
 		t.Fatalf("bad len: %v %v", r.Len(), len(keys))
@@ -182,7 +176,7 @@ func TestLongestPrefix(t *testing.T) {
 		{"foozipzap", "foozip"},
 	}
 	for _, test := range cases {
-		m, _, ok := r.LongestPrefix(test.inp)
+		m, ok := r.LongestPrefix(test.inp)
 		if !ok {
 			t.Fatalf("no match: %v", test)
 		}
@@ -203,7 +197,7 @@ func TestWalkPrefix(t *testing.T) {
 		"zipzap",
 	}
 	for _, k := range keys {
-		r.Insert(k, nil)
+		r.Insert(k)
 	}
 	if r.Len() != len(keys) {
 		t.Fatalf("bad len: %v %v", r.Len(), len(keys))
@@ -258,7 +252,7 @@ func TestWalkPrefix(t *testing.T) {
 
 	for _, test := range cases {
 		out := []string{}
-		fn := func(s string, v interface{}) bool {
+		fn := func(s string) bool {
 			out = append(out, s)
 			return false
 		}
@@ -283,7 +277,7 @@ func TestWalkPath(t *testing.T) {
 		"zipzap",
 	}
 	for _, k := range keys {
-		r.Insert(k, nil)
+		r.Insert(k)
 	}
 	if r.Len() != len(keys) {
 		t.Fatalf("bad len: %v %v", r.Len(), len(keys))
@@ -330,7 +324,7 @@ func TestWalkPath(t *testing.T) {
 
 	for _, test := range cases {
 		out := []string{}
-		fn := func(s string, v interface{}) bool {
+		fn := func(s string) bool {
 			out = append(out, s)
 			return false
 		}
