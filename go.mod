@@ -1,1 +1,3 @@
-module github.com/armon/go-radix
+module github.com/neilshweky/go-radix
+
+go 1.17
